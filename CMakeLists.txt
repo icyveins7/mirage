@@ -30,7 +30,7 @@ set(IMGUI_SRCS
   ${IMGUI_DIR}/imgui.cpp
   ${IMGUI_DIR}/imgui.cpp ${IMGUI_DIR}/imgui_demo.cpp ${IMGUI_DIR}/imgui_draw.cpp ${IMGUI_DIR}/imgui_tables.cpp ${IMGUI_DIR}/imgui_widgets.cpp
 )
-message("imgui srcs = " ${IMGUI_SRCS})
+# message("imgui srcs = ${IMGUI_SRCS}")
 set(IMGUI_DEMO_SRC ${IMGUI_DIR}/imgui_demo.cpp)
 set(IMGUI_IMPL_SRCS
   ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
