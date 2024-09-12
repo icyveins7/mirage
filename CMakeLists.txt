@@ -69,6 +69,7 @@ add_executable(imgui_demo
 target_link_libraries(imgui_demo PUBLIC ${OPENGL_LIBRARY} glfw)
 
 # Test compile of our implot demo (internally written)
+include_directories(include/)
 add_executable(implot_demo
   ${IMGUI_SRCS}
   ${IMGUI_IMPL_SRCS}
