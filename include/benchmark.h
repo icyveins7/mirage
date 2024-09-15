@@ -8,7 +8,7 @@
 #include <GLFW/glfw3.h> // same as main.cpp, use this to drag OpenGL
 
 template <typename T>
-class BenchmarkWindow
+class BenchmarkLines
 {
 public:
   void render()
@@ -43,7 +43,24 @@ public:
     }
 
     // =================
-    ImGui::Separator();
+    ImGui::End();
+  };
+
+private:
+  std::vector<T> m_x;
+  std::vector<T> m_y;
+
+};
+
+template <typename T>
+class BenchmarkImage
+{
+public:
+  void render()
+  {
+    ImGui::Begin("Benchmark");
+    // =================
+
     static size_t sideLength = 1000;
     char sideLenInputLabel[64];
     snprintf(sideLenInputLabel, 64, "Side length (current size: %zu)", m_imgdata.size());
@@ -76,14 +93,17 @@ public:
       }
       ImPlot::EndPlot();
     }
+
+    if (!m_imgdata.empty())
+    {
+      ImGui::Image((void*)m_imgtexture, ImVec2(sideLength, sideLength));
+    }
+
     // =================
     ImGui::End();
-  };
+  }
 
 private:
-  std::vector<T> m_x;
-  std::vector<T> m_y;
-
   std::vector<T> m_imgdata;
   GLuint m_imgtexture;
 
@@ -122,4 +142,78 @@ private:
                  GL_UNSIGNED_BYTE, m_imgdata.data());
 
   }
+};
+
+template <typename T>
+class BenchmarkHeatmap
+{
+public:
+  void render()
+  {
+    ImGui::Begin("BenchmarkHeatmap");
+
+    static size_t width = 100;
+    static size_t height = 100;
+    ImGui::InputScalar("Width##heatmap", ImGuiDataType_U64, &width);
+    ImGui::InputScalar("Height##heatmap", ImGuiDataType_U64, &height);
+
+    if (ImGui::Button("Apply##heatmap"))
+    {
+      if (width != m_width || height != m_height)
+      {
+        m_width = width;
+        m_height = height;
+        m_heatmapData.resize(width*height);
+
+        prepareHeatmap();
+      }
+    }
+
+    if (ImPlot::BeginPlot("##Heatmap1")) //,ImVec2(225,225),ImPlotFlags_NoLegend|ImPlotFlags_NoMouseText)) 
+    {
+      if (!m_heatmapData.empty())
+      {
+
+        // ImPlot::SetupAxes(nullptr, nullptr, axes_flags, axes_flags);
+        // ImPlot::SetupAxisTicks(ImAxis_X1,0 + 1.0/14.0, 1 - 1.0/14.0, 7, xlabels);
+        // ImPlot::SetupAxisTicks(ImAxis_Y1,1 - 1.0/14.0, 0 + 1.0/14.0, 7, ylabels);
+        // ImPlot::PlotHeatmap("heat",values1[0],7,7,scale_min,scale_max,"%g",ImPlotPoint(0,0),ImPlotPoint(1,1),hm_flags);
+
+        ImPlot::PlotHeatmap("heatmap", m_heatmapData.data(), m_width, m_height,
+                            0, 0, "%g");
+      }
+      ImPlot::EndPlot();
+    }
+
+
+    // =================
+    ImGui::End();
+  }
+
+
+private:
+  size_t m_width;
+  size_t m_height;
+  std::vector<T> m_heatmapData;
+
+  void prepareHeatmap()
+  {
+    printf("prepareHeatmap %zd x %zd\n", m_width, m_height);
+    /*
+    Want a diagonal gradient, with brightest spot at top right.
+    */
+    for (size_t i = 0; i < m_width; ++i)
+    {
+      for (size_t j = 0; j < m_height; ++j)
+      {
+        // T val = static_cast<T>(std::sqrt(i*i + j*j) / std::sqrt(sideLength*sideLength));
+        if (i < j)
+          m_heatmapData[j*m_width + i] = 0.0;
+        else
+          m_heatmapData[j*m_width + i] = (i+j);
+      }
+    }
+
+  }
+
 };

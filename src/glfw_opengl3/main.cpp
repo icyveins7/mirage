@@ -48,7 +48,9 @@ static void glfw_error_callback(int error, const char* description)
 int main(int, char**)
 {
     // Set up our classes
-    BenchmarkWindow<float> benchmark;
+    BenchmarkLines<float> benchmark;
+    // BenchmarkImage<float> benchmarkImage;
+    BenchmarkHeatmap<float> benchmarkHeatmap;
 
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
@@ -145,8 +147,8 @@ int main(int, char**)
         ImGui::NewFrame();
 
         // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-        if (show_demo_window)
-            ImGui::ShowDemoWindow(&show_demo_window);
+        // if (show_demo_window)
+        //     ImGui::ShowDemoWindow(&show_demo_window);
 
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
         {
@@ -181,11 +183,12 @@ int main(int, char**)
             ImGui::End();
         }
 
-        // Show ImPlot demos
-        ImPlot::ShowDemoWindow();
+        // // Show ImPlot demos
+        // ImPlot::ShowDemoWindow();
 
         // Show benchmarks
         benchmark.render();
+        benchmarkHeatmap.render();
 
         // Rendering
         ImGui::Render();
