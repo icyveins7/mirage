@@ -49,7 +49,8 @@ int main(int, char**)
 {
     // Set up our classes
     BenchmarkLines<float> benchmark;
-    BenchmarkImage benchmarkImage;
+    // BenchmarkImage<float> benchmarkImage;
+    BenchmarkImage<uint8_t> benchmarkImage;
     BenchmarkHeatmap<float> benchmarkHeatmap;
 
     glfwSetErrorCallback(glfw_error_callback);

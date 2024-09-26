@@ -4,8 +4,23 @@
 #include "implot.h"
 #include "implot_internal.h"
 
+#include <OpenGL/gl.h>
 #include <vector>
 #include <GLFW/glfw3.h> // same as main.cpp, use this to drag OpenGL
+
+// Just some helper templates for specifying types, for testing
+template <typename T>
+struct GLTypeMap {
+  static const uint16_t type;
+};
+
+template <>
+inline const uint16_t GLTypeMap<float>::type = GL_FLOAT;
+
+template <>
+inline const uint16_t GLTypeMap<uint8_t>::type = GL_UNSIGNED_BYTE;
+
+
 
 template <typename T>
 class BenchmarkLines
@@ -52,6 +67,7 @@ private:
 
 };
 
+template <typename T>
 class BenchmarkImage
 {
 public:
@@ -59,6 +75,9 @@ public:
   {
     ImGui::Begin("BenchmarkImage");
     // =================
+    static int maxTextureSize;
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
+    ImGui::Text("Maximum texture size = %d\n", maxTextureSize);
 
     static size_t sideLength = 1000;
     char sideLenInputLabel[64];
@@ -70,12 +89,10 @@ public:
       if (sideLength*sideLength != m_imgdata.size())
       {
         m_imgdata.resize(sideLength*sideLength);
+        printf("m_imgdata size now = %zd\n", m_imgdata.size());
 
         createImage(sideLength);
-
-
       }
-
     }
 
     static ImVec2 bmin(0,0);
@@ -105,24 +122,15 @@ public:
   }
 
 private:
-  std::vector<float> m_imgdata;
+  std::vector<T> m_imgdata;
   GLuint m_imgtexture;
 
+  void prepImage(size_t sideLength);
 
   void createImage(size_t sideLength){
     printf("createImage %zd\n", sideLength);
-    /*
-    Want a diagonal gradient, with brightest spot at top right.
-    */
-    for (size_t i = 0; i < sideLength; ++i)
-    {
-      for (size_t j = 0; j < sideLength; ++j)
-      {
-        // T val = static_cast<T>(std::sqrt(i*i + j*j) / std::sqrt(sideLength*sideLength));
-        float val = (i+j) / (2.0*sideLength);
-        m_imgdata[i*sideLength + j] = val;
-      }
-    }
+
+    prepImage(sideLength);
 
     // Remake the image
     // Create a OpenGL texture identifier
@@ -139,16 +147,52 @@ private:
     // Upload pixels into texture
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
     // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 
+    printf("Using glTexImage2D format of %X\n", GLTypeMap<T>::type);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RED,
                  sideLength, // width
                  sideLength, // height
                  // 0, GL_LUMINANCE, // let's try grayscale for now (this seems like it's obsolete)
                  0, GL_RED, // let's try grayscale for now
-                 GL_FLOAT, m_imgdata.data());
+                 GLTypeMap<T>::type, m_imgdata.data());
 
 
   }
 };
+
+// Specializations for image prep
+template <>
+inline void BenchmarkImage<float>::prepImage(size_t sideLength)
+{
+    /*
+    Want a diagonal gradient, with brightest spot at top right.
+    */
+    for (size_t i = 0; i < sideLength; ++i)
+    {
+      for (size_t j = 0; j < sideLength; ++j)
+      {
+        // T val = static_cast<T>(std::sqrt(i*i + j*j) / std::sqrt(sideLength*sideLength));
+        float val = (i+j) / (2.0*sideLength);
+        m_imgdata[i*sideLength + j] = val;
+      }
+    }
+}
+
+template <>
+inline void BenchmarkImage<uint8_t>::prepImage(size_t sideLength)
+{
+    /*
+    Want a diagonal gradient, with brightest spot at top right.
+    */
+    for (size_t i = 0; i < sideLength; ++i)
+    {
+      for (size_t j = 0; j < sideLength; ++j)
+      {
+        // T val = static_cast<T>(std::sqrt(i*i + j*j) / std::sqrt(sideLength*sideLength));
+        uint8_t val = static_cast<float>(i+j) / (2.0*sideLength) * UINT8_MAX;
+        m_imgdata[i*sideLength + j] = val;
+      }
+    }
+}
 
 template <typename T>
 class BenchmarkHeatmap
