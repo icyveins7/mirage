@@ -52,13 +52,12 @@ private:
 
 };
 
-template <typename T>
 class BenchmarkImage
 {
 public:
   void render()
   {
-    ImGui::Begin("Benchmark");
+    ImGui::Begin("BenchmarkImage");
     // =================
 
     static size_t sideLength = 1000;
@@ -87,24 +86,26 @@ public:
       {
         ImPlot::PlotImage(
           "test image",
-          (void*)m_imgtexture,
+          reinterpret_cast<void*>(m_imgtexture),
           bmin, bmax
         );
       }
       ImPlot::EndPlot();
     }
 
-    if (!m_imgdata.empty())
-    {
-      ImGui::Image((void*)m_imgtexture, ImVec2(sideLength, sideLength));
-    }
+    // // use original imgui
+    // if (!m_imgdata.empty())
+    // {
+    //   ImGui::Image(reinterpret_cast<void*>(m_imgtexture), ImVec2(sideLength, sideLength));
+    //   // ImGui::Image((ImTextureID)(intptr_t)m_imgtexture, ImVec2(sideLength, sideLength));
+    // }
 
     // =================
     ImGui::End();
   }
 
 private:
-  std::vector<T> m_imgdata;
+  std::vector<float> m_imgdata;
   GLuint m_imgtexture;
 
 
@@ -118,28 +119,32 @@ private:
       for (size_t j = 0; j < sideLength; ++j)
       {
         // T val = static_cast<T>(std::sqrt(i*i + j*j) / std::sqrt(sideLength*sideLength));
-        T val = (i+j) / (2.0*sideLength);
+        float val = (i+j) / (2.0*sideLength);
         m_imgdata[i*sideLength + j] = val;
       }
     }
 
     // Remake the image
     // Create a OpenGL texture identifier
-    GLuint m_imgtexture;
+    // GLuint m_imgtexture;
     glGenTextures(1, &m_imgtexture);
     glBindTexture(GL_TEXTURE_2D, m_imgtexture);
+
+    // Upload pixels into texture
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED,
+                 sideLength, // width
+                 sideLength, // height
+                 // 0, GL_LUMINANCE, // let's try grayscale for now (this seems like it's obsolete)
+                 0, GL_RED, // let's try grayscale for now
+                 GL_FLOAT, m_imgdata.data());
 
     // Setup filtering parameters for display
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    // Upload pixels into texture
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 
-                 sideLength, // width
-                 sideLength, // height
-                 0, GL_LUMINANCE, // let's try grayscale for now
-                 GL_UNSIGNED_BYTE, m_imgdata.data());
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
   }
 };
