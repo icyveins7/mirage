@@ -24,6 +24,10 @@ include_directories(${GLFW_DIR}/include)
 set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
 include_directories(${IMGUI_DIR} ${IMGUI_DIR}/backends)
 
+# ImPlot
+set(IMPLOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/implot)
+include_directories(${IMPLOT_DIR})
+
 # Libraries
 find_package(Vulkan REQUIRED)
 #find_library(VULKAN_LIBRARY
@@ -45,6 +49,9 @@ add_executable(
   ${IMGUI_DIR}/imgui_demo.cpp
   ${IMGUI_DIR}/imgui_tables.cpp
   ${IMGUI_DIR}/imgui_widgets.cpp
+  ${IMPLOT_DIR}/implot.cpp
+  ${IMPLOT_DIR}/implot_demo.cpp
+  ${IMPLOT_DIR}/implot_items.cpp
 )
 target_link_libraries(mirage ${LIBRARIES})
 
