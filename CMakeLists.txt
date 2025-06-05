@@ -39,6 +39,9 @@ set(LIBRARIES "glfw;Vulkan::Vulkan")
 # Use vulkan headers from glfw:
 include_directories(${GLFW_DIR}/deps)
 
+# Local includes
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 add_executable(
   mirage
   ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp

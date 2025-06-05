@@ -25,6 +25,8 @@
 #include "implot.h"
 #include "implot_internal.h"
 
+#include "benchmarks.h"
+
 // Volk headers
 #ifdef IMGUI_IMPL_VULKAN_USE_VOLK
 #define VOLK_IMPLEMENTATION
@@ -354,6 +356,10 @@ static void FramePresent(ImGui_ImplVulkanH_Window* wd)
 // Main code
 int main(int, char**)
 {
+    // mirage-specific
+    benchmarks::BenchmarkLines<float> benchmarklines;
+    benchmarks::BenchmarkScatter<float> benchmarkscatter;
+
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
         return 1;
@@ -524,6 +530,10 @@ int main(int, char**)
         {
             ImPlot::ShowDemoWindow();
         }
+
+        // 5. Show benchmark window
+        benchmarklines.render();
+        benchmarkscatter.render();
 
 
         // Rendering
